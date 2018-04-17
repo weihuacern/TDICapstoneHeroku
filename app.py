@@ -10,6 +10,14 @@ from bokeh.plotting import figure
 from bokeh.resources import INLINE
 from bokeh.util.string import encode_utf8
 
+#import nltk
+#from nltk.tokenize import sent_tokenize, word_tokenize
+#from nltk.corpus import stopwords
+#from nltk.tokenize import RegexpTokenizer
+#import sqlite3
+
+#import gensim
+
 app = Flask(__name__)
 
 @app.route('/')
@@ -31,7 +39,12 @@ def predict():
   #stockperiod = str(request.args.get('period'))
 
   if Make and Model and Year:
-  #if stockticker and stockticker.strip():
+    #w2vmodelname = make + "_" + model + "_" + year + "_w2v.model"
+    #w2vmodel = gensim.models.Word2Vec.load("NLPModels/" + w2vmodelname)
+    #target = ['ydm', 'usa', 'index', 'qxp', '2016', '29', 'pm', 'page', 'index', 'securing', 'child', 'restraint', 'seat', 'withchild', 'seat', 'lower', 'anchor', 'system', '32', 'child', 'protector', 'rear', 'door', 'lock', '20', 'clean', 'air', '129', 'climate', 'control', 'air', 'filter', '39', 'filter', 'inspection', '39', 'climate', 'control', 'seat', '136', 'clothes', 'hanger', '139', 'combined', 'instrument', 'see', 'instrument', 'cluster', '54', 'consumer', 'assistance', '12', 'coolant', '32', 'cooling', 'fluid', 'see', 'engine', 'coolant', '32', 'crankcase', 'emission', 'control', 'system', '97', 'cruise', 'control', 'system', '56', 'cruise', 'control', 'switch', '56', 'set', 'cruise', 'control', 'speed', '57', 'increase', 'cruise', 'control', 'set', 'speed', '58', 'decrease', 'cruising', 'speed', '58', 'temporarily', 'accelerate', 'cruise', 'control', '58', 'cancel', 'cruise', 'control', '59', 'resume', 'cruising', 'speed', 'approximately', '20', 'mph', '30', 'km', '59', 'turn', 'cruise', 'control', '60', 'cup', 'holder', '133', 'curtain', 'air', 'bag', '50', '4i', 'dashboard', 'illumination', 'see', 'instrument', 'panel', 'illumination', '55', 'dashboard', 'see', 'instrument', 'cluster', '54', 'day', 'night', 'rearview', 'mirror', '49', 'declaration', 'conformity', '262', 'fcc', '262', 'defogging', 'windshield', '125', 'defroster', 'rear', 'window', '104', 'defrosting', 'windshield', '125', 'dimensions', 'disarmed', 'stage', '15', 'display', 'illumination', 'see', 'instrument', 'panel', 'illumination', '55', 'displays', 'see', 'instrument', 'cluster', '54', 'door', 'locks', '17', 'outside', 'vehicle', '17', 'inside', 'vehicle', '17', 'central', 'door', 'lock', 'switch', '18', 'child', 'protector', 'rear', 'door', 'lock', '20', 'drive', 'mode', 'drive', 'mode', 'integrated', 'control', 'system', '61', 'drive', 'mode', 'integrated', 'control', 'system', '61', 'drive', 'mode', '61', 'eco', 'mode', '61', 'sport', 'mode', '62', 'driver', 'position', 'memory', 'system']
+
+    #testres = w2vmodel.n_similarity(['speed', 'limit', 'alert'], target)
+    #print(testres)
     '''
     #Request data from Quandl
     baseURL = 'https://www.quandl.com/api/v3/datasets/WIKI/'
