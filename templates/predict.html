@@ -73,6 +73,7 @@
           <p>{{status.msg}}</p>
         {% endif %}   
         {% if status.code==1 %}
+          {{ resurl }}
           {{ plot.div|indent(4)|safe }}
         {% endif %}        
     </div>
