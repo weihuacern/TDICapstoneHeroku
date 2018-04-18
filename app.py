@@ -20,6 +20,7 @@ import sqlite3
 import gensim
 
 app = Flask(__name__)
+stopWords = set(stopwords.words('english'))
 
 @app.route('/')
 def main():
@@ -32,7 +33,7 @@ def about():
 
 def tokenization(text, vocabulary):
   tokenizer = RegexpTokenizer(r'\w+')
-  stopWords = set(stopwords.words('english'))
+  #stopWords = set(stopwords.words('english'))
     
   wordsFiltered = []
   words = tokenizer.tokenize(text)
@@ -43,22 +44,23 @@ def tokenization(text, vocabulary):
         wordsFiltered.append(wlower)
   return wordsFiltered
 
-def getresult(make, model, year, query):
+def getresult(make, model, year, query, qtype):
   #load from sql to dataframe
   con = sqlite3.connect( "TextDBs/" + make + "TextInfo.db" )
   cursor = con.cursor()
   cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
-  sqlcmds = [ ("SELECT * FROM `" + x[0] + "`;") for x in (cursor.fetchall()) if model in x[0] and year in x[0]]
+  sqlcmds = [ ("SELECT * FROM `" + x[0] + "`;") for x in (cursor.fetchall()) if model in x[0] and year in x[0] and qtype in x[0] ]
   df = pd.DataFrame()
   for sqlcmd in sqlcmds:
     tmpdf = pd.read_sql_query(sqlcmd, con)
     df = df.append(tmpdf)
 
-  #split query
-  querylist = query.split(' ')
   #load nlp model
   w2vmodel = gensim.models.Word2Vec.load("NLPModels/" + make + "_" + model + "_" + year + "_w2v.model")
   
+  #split query
+  querylist = [x.lower() for x in query.split(' ') if x.lower() not in stopWords and x.lower() in w2vmodel.wv.vocab]
+
   reslist = []
   for index, row in df.iterrows():
     textlist = tokenization(row['text'], w2vmodel.wv.vocab)
@@ -80,14 +82,15 @@ def predict():
   Model = request.args.get('Model')
   Year = request.args.get('Year')
   Query = str(request.args.get('Query'))
+  QType = str(request.args.get('QType'))
 
-  if Make and Model and Year and Query:
+  if Make and Model and Year and Query and QType:
     '''
     #Parse data if HTTP Status is OK
     if HTTPstatusCode == 200:
       print(stockdata.head())
     '''
-    predres = getresult(Make, Model, Year, Query)
+    predres = getresult(Make, Model, Year, Query, QType)
     #URL feedback
     resurl = "https://s3-us-west-2.amazonaws.com/huaherokupdfs/" + Make + "/" + Model + "/" + Year + "/" + predres[-1][0] + "#page=" + str(predres[-1][1])
 
