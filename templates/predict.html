@@ -73,7 +73,7 @@
           <p>{{status.msg}}</p>
         {% endif %}   
         {% if status.code==1 %}
-          {{ resurl }}
+          <p style="border:3px; border-style:solid; border-color:#FF0000; padding: 1em;"> The following URL(s) may be helpful: <br> <a href={{ resurl }}>Solution in Manual</a> </p>
           {{ plot.div|indent(4)|safe }}
         {% endif %}        
     </div>
