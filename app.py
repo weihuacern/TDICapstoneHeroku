@@ -95,7 +95,7 @@ def predict():
     resurl = "https://s3-us-west-2.amazonaws.com/huaherokupdfs/" + Make + "/" + Model + "/" + Year + "/" + predres[-1][0] + "#page=" + str(predres[-1][1])
 
     #Render Plot
-    fig = figure(title = None, plot_width = 800, plot_height = 600, toolbar_location = "below", tools = "crosshair, pan, wheel_zoom, box_zoom, reset")
+    fig = figure(title = None, plot_width = 965, plot_height = 700, toolbar_location = "below", tools = "crosshair, pan, wheel_zoom, box_zoom, reset")
     #data = np.random.uniform(0,1,2000)
     data = np.array( [x[2] for x in predres] )
     hist, edges = np.histogram(data, density=False, bins=50)
