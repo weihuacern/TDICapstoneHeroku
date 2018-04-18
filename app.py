@@ -101,7 +101,7 @@ def predict():
     hist, edges = np.histogram(data, density=False, bins=50)
     fig.quad(top=hist, bottom=0, left=edges[:-1], right=edges[1:], line_color="white")
     fig.xaxis.axis_label = "Similarity"
-    fig.yaxis.axis_label = None
+    fig.yaxis.axis_label = "Number of Entries"
     
     js_resources = INLINE.render_js()
     css_resources = INLINE.render_css()

@@ -79,7 +79,8 @@
           <p>{{status.msg}}</p>
         {% endif %}   
         {% if status.code==1 %}
-          <p style="border:3px; border-style:solid; border-color:#FF0000; padding: 1em;"> The following URL(s) may be helpful: <br> <a href={{ resurl }}>Solution in Manual</a> </p>
+          <p style="border:3px; border-style:solid; border-color:#FF0000; padding: 1em; color:blue; font-size:120%;" align="middle"> The following page(s) may be helpful: </p>
+          <iframe src={{ resurl }} width="800" height="600" align="middle"></iframe>
           {{ plot.div|indent(4)|safe }}
         {% endif %}        
     </div>
