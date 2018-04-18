@@ -30,7 +30,7 @@ def about():
   return render_template('about.html')
 
 
-def tokenization(text):
+def tokenization(text, vocabulary):
   tokenizer = RegexpTokenizer(r'\w+')
   stopWords = set(stopwords.words('english'))
     
@@ -38,7 +38,7 @@ def tokenization(text):
   words = tokenizer.tokenize(text)
   for w in words:
     wlower = w.lower()
-    if wlower not in stopWords:
+    if wlower not in stopWords and wlower in vocabulary:
       if len(wlower) > 1: # filter short word
         wordsFiltered.append(wlower)
   return wordsFiltered
@@ -48,7 +48,7 @@ def getresult(make, model, year, query):
   con = sqlite3.connect( "TextDBs/" + make + "TextInfo.db" )
   cursor = con.cursor()
   cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
-  sqlcmds = [ ("SELECT * FROM `" + x[0] + "`;") for x in (cursor.fetchall()) ]
+  sqlcmds = [ ("SELECT * FROM `" + x[0] + "`;") for x in (cursor.fetchall()) if model in x[0] and year in x[0]]
   df = pd.DataFrame()
   for sqlcmd in sqlcmds:
     tmpdf = pd.read_sql_query(sqlcmd, con)
@@ -61,7 +61,7 @@ def getresult(make, model, year, query):
   
   reslist = []
   for index, row in df.iterrows():
-    textlist = tokenization(row['text'])
+    textlist = tokenization(row['text'], w2vmodel.wv.vocab)
     if len(textlist) > 0:
       similarity = w2vmodel.n_similarity( querylist, textlist)
       thistuple = (row['filename'], int(row['pagenum']), similarity)
@@ -88,7 +88,6 @@ def predict():
       print(stockdata.head())
     '''
     predres = getresult(Make, Model, Year, Query)
-    print(predres)
     #URL feedback
     resurl = "https://s3-us-west-2.amazonaws.com/huaherokupdfs/" + Make + "/" + Model + "/" + Year + "/" + predres[-1][0] + "#page=" + str(predres[-1][1])
 
