@@ -1,119 +1,125 @@
+# python3
+
 import os
-from flask import Flask, render_template, request, redirect, url_for
-import requests
-from requests.auth import HTTPBasicAuth
-import pandas as pd
-import numpy as np
-import datetime
-
-from bokeh.embed import components
-from bokeh.plotting import figure
-from bokeh.resources import INLINE
-from bokeh.util.string import encode_utf8
-
-import nltk
-from nltk.tokenize import sent_tokenize, word_tokenize
-from nltk.corpus import stopwords
-from nltk.tokenize import RegexpTokenizer
 import sqlite3
 
 import gensim
+import nltk
+import pandas as pd
+from flask import abort, Flask, jsonify, redirect, render_template, request, url_for
+from nltk.corpus import stopwords
+from nltk.tokenize import RegexpTokenizer, sent_tokenize, word_tokenize
+
+PORT = os.environ.get('PORT', default=8000)
+DEBUG = os.environ.get('DEBUG', default=False)
 
 app = Flask(__name__)
-stopWords = set(stopwords.words('english'))
-
-@app.route('/')
-def main():
-  return redirect(url_for('predict'))
-
-@app.route('/about')
-def about():
-  return render_template('about.html')
-
+stop_words = set(stopwords.words('english'))
 
 def tokenization(text, vocabulary):
-  tokenizer = RegexpTokenizer(r'\w+')
-  #stopWords = set(stopwords.words('english'))
-    
-  wordsFiltered = []
-  words = tokenizer.tokenize(text)
-  for w in words:
-    wlower = w.lower()
-    if wlower not in stopWords and wlower in vocabulary:
-      if len(wlower) > 1: # filter short word
-        wordsFiltered.append(wlower)
-  return wordsFiltered
+    tokenizer = RegexpTokenizer(r'\w+')
 
-def getresult(make, model, year, query, qtype):
-  #load from sql to dataframe
-  con = sqlite3.connect( "TextDBs/" + make + "TextInfo.db" )
-  cursor = con.cursor()
-  cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
-  sqlcmds = [ ("SELECT * FROM `" + x[0] + "`;") for x in (cursor.fetchall()) if model in x[0] and year in x[0] and qtype in x[0] ]
-  df = pd.DataFrame()
-  for sqlcmd in sqlcmds:
-    tmpdf = pd.read_sql_query(sqlcmd, con)
-    df = df.append(tmpdf)
+    wordsFiltered = []
+    words = tokenizer.tokenize(text)
+    for w in words:
+        wlower = w.lower()
+        if wlower not in stop_words and wlower in vocabulary:
+            if len(wlower) > 1:  # filter short word
+                wordsFiltered.append(wlower)
+    return wordsFiltered
 
-  #load nlp model
-  w2vmodel = gensim.models.Word2Vec.load("NLPModels/" + make + "_" + model + "_" + year + "_w2v.model")
-  
-  #split query
-  querylist = [x.lower() for x in query.split(' ') if x.lower() not in stopWords and x.lower() in w2vmodel.wv.vocab]
-  print(querylist)
-  reslist = []
-  for index, row in df.iterrows():
-    textlist = tokenization(row['text'], w2vmodel.wv.vocab)
-    if len(textlist) > 0:
-      similarity = w2vmodel.n_similarity( querylist, textlist)
-      thistuple = (row['filename'], int(row['pagenum']), row['text'], similarity)
-      reslist.append(thistuple)
 
-  sorted_reslist = sorted(reslist, key=lambda x: x[3])
-  print(sorted_reslist[:2])
-  return sorted_reslist
-  #return [("2017_Forte_FFG.pdf", 16, 0.124), 
-  #        ("qpdfHacked_2017_Forte_OM.pdf", 25, 0.924)]
+def get_sql(make, model, year, manual_type):
+    con = sqlite3.connect('text/' + make + '.db')
+    cursor = con.cursor()
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+    sqlcmds = [("SELECT * FROM `" + x[0] + "`;") for x in (cursor.fetchall())
+               if model in x[0] and year in x[0] and manual_type in x[0]]
+    # need the connection later, so close outside of function
+    return sqlcmds, con
 
-#Main Process
-@app.route('/predict')
+
+def get_data_frame(sqlcmds, con):
+    df = pd.DataFrame()
+    for sqlcmd in sqlcmds:
+        tmpdf = pd.read_sql_query(sqlcmd, con)
+        df = df.append(tmpdf)
+    # done with connection now
+    con.close()
+    return df
+
+
+def getresult(model, query, make='KIA', year='2017', manual_type='OM', num_results=3):
+    """
+    returns two values (in node style), either True, None which indicates an error happened
+    or False, and an array of dictionaries OTF {file:..., page:..., similarity:..., text:...}
+    """
+    #load from sql to dataframe
+    sqlcmds, con = get_sql(make, model, year, manual_type)
+    df = get_data_frame(sqlcmds, con)
+
+    #load nlp model
+    w2vmodel = gensim.models.Word2Vec.load(
+        'models/' + make + '_' + model + '_' + year + '_w2v.model')
+
+    #split query
+    querylist = [x.lower() for x in query.split(' ') if x.lower()
+                 not in stop_words and x.lower() in w2vmodel.wv.vocab]
+
+    reslist = []
+    for idx, row in df.iterrows():
+        textlist = tokenization(row['text'], w2vmodel.wv.vocab)
+        if len(textlist) > 0:
+            try:
+                similarity = w2vmodel.n_similarity(querylist, textlist)
+            except ZeroDivisionError:
+                print('not at all similar')
+                similarity = 0
+            if similarity > 0:
+                entry = {"file": row['filename'], "page": int(row['pagenum']),
+                         "text": row['text'], "similarity": similarity, "make": make,
+                         "model": model, "year": year}
+                reslist.append(entry)
+
+    sorted_reslist = sorted(reslist, key=lambda x: x["similarity"])
+    # return top 3
+    if len(sorted_reslist) > 0:
+        return False, sorted_reslist[-num_results:]
+    else:
+        return True, None
+
+
+@app.route('/api')
 def predict():
-  Make = request.args.get('Make')
-  Model = request.args.get('Model')
-  Year = request.args.get('Year')
-  Query = str(request.args.get('Query'))
-  QType = str(request.args.get('QType'))
+    """
+    Example
+    /api?make=KIA&model=Rio&year=2017&manual_type=OM&query=bluetooth
+    """
+    make = request.args.get('make', default='KIA')
+    model = request.args.get('model', default='Rio')
+    year = request.args.get('year', default='2017')
+    query = str(request.args.get('query'))
+    manual_type = str(request.args.get('manual_type', default='OM'))
 
-  if Make and Model and Year and Query and QType:
-    '''
-    #Parse data if HTTP Status is OK
-    if HTTPstatusCode == 200:
-      print(stockdata.head())
-    '''
-    predres = getresult(Make, Model, Year, Query, QType)
-    #URL feedback
-    resurl = "https://s3-us-west-2.amazonaws.com/huaherokupdfs/" + Make + "/" + Model + "/" + Year + "/" + predres[-1][0] + "#page=" + str(predres[-1][1])
+    if model and query:
+        error, top_3 = getresult(
+            model, query, make=make, year=year, manual_type=manual_type)
+        if error:
+            abort(404)
+        return jsonify(top_3)
+    else:
+        abort(404)
 
-    #Render Plot
-    fig = figure(title = None, plot_width = 965, plot_height = 700, toolbar_location = "below", tools = "crosshair, pan, wheel_zoom, box_zoom, reset")
-    #data = np.random.uniform(0,1,2000)
-    data = np.array( [x[2] for x in predres] )
-    hist, edges = np.histogram(data, density=False, bins=50)
-    fig.quad(top=hist, bottom=0, left=edges[:-1], right=edges[1:], line_color="white")
-    fig.xaxis.axis_label = "Similarity"
-    fig.yaxis.axis_label = "Number of Entries"
-    
-    js_resources = INLINE.render_js()
-    css_resources = INLINE.render_css()
+@app.route('/')
+def home():
+    print('home')
+    return render_template('index.html')
 
-    script, div = components(fig, INLINE)
-    html = render_template('predict.html', status = {'code':1, 'msg':'OK'}, predict = {'Make':Make, 'Model':Model, 'Year':Year}, resurl = resurl, plot = {'script':script, 'div':div}, js_resources=js_resources, css_resources=css_resources)
-    #else:
-    #  html = render_template('predict.html', status = {'code':2, 'msg':'Server Error'}, stock = {'ticker':stockticker, 'period':stockperiod})
-  else:
-    html = render_template('predict.html', status = {'code':3, 'msg':'Please Enter a valid predict parameters'}, predict = {'Make':'None', 'Model':'None', 'Year':'None'})
 
-  return html
+@app.errorhandler(404)
+def page_not_found(error):
+    return 'No similar passage found', 404
+
 
 if __name__ == '__main__':
-  app.run(host='0.0.0.0', port=8000, debug = True)
+    app.run(host='0.0.0.0', port=PORT, debug=DEBUG)
