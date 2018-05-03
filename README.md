@@ -21,7 +21,7 @@ Running `python3 app.py` starts up a server that has the route `/api`, which ret
 
 The server is a Flask server on port 8000 (configurable with a PORT environment variable). The debug param is also configurable, eg, `DEBUG=True PORT=5050 python3 app.py` will start the server in debug mode on port 5050.
 
-### Possible action items
+### Ideas
 
 * Use [PDFjs](https://mozilla.github.io/pdf.js/examples/) so we can eagerly fetch the PDFs, and just render them when the user presses the button - it will seem much faster. We will start to fetch on any dropdown change, but throttled so we don't go too crazy
 * NEXT button to jump to next most similar result - this will also benefit from PDFjs, since we don't need to reload the whole doc, we can just move pages
