@@ -1,2 +1,5 @@
-__pycache__
-.env
+local.procfile
+.vscode
+*.pyc
+-__pycache__
+-.env

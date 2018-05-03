@@ -1,13 +1,52 @@
 ﻿<!doctype html>
 <html lang="en">
-	<head>
-		<meta charset="utf-8">
-		<title>Hello, World!</title>
-		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
-	</head>
-	<body>
-		<div>
-  			<h1>Hello, World!</h1>
+
+<head>
+	<meta charset="utf-8">
+	<meta name="description" content="The data incubator, 2018 April">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="author" content="Hua Wei">
+	<title>Owner Manual Search</title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+	<link rel="stylesheet" href="{{ url_for('static',filename='css/normalize.css')}}">
+	<link rel="stylesheet" href="{{ url_for('static',filename='css/skeleton.css')}}">
+	<link rel="icon" type="image/png" href="{{ url_for('static',filename='images/tj_favicon.ico')}}">
+</head>
+
+<body>
+	<div class="container">
+		<div class="row" style="margin-left: 15px;">
+			<h1>Search your Owner Manual</h1>
 		</div>
-	</body>
+		<div class="row">
+			<form id="manual-chooser">
+				<select name="make" id="make">
+					<option value="KIA">KIA</option>
+				</select>
+				<select name="model" id="model">
+					<option value="Rio">Rio</option>
+					<option value="Forte">Forte</option>
+				</select>
+				<select name="year" id="year">
+					<option value="2016">2016</option>
+					<option value="2015">2015</option>
+					<option value="2017" selected>2017</option>
+					<option value="2018">2018</option>
+				</select>
+				<select name="manual_type" id="manual_type">
+					<option value="OM" selected>OM</option>
+					<option value="UVO">UVO</option>
+					<option value="Navi">Navi</option>
+					<option value="FFG">FFG</option>
+				</select>
+				<label>Question</label>
+				<input id="query" type="text" size="40" name="query" value="" placeholder="What do you want to know?" />
+				<input class="button-primary" type="button" id="submit" />
+			</form>
+		</div>
+		<div id="main"></div>
+	</div>
+	<script src="{{ url_for('static',filename='js/main.js')}}"></script>
+</body>
+
 </html>
