@@ -14,7 +14,6 @@ function encodeData(data) {
 
 function successHandler(res, iframe, mainDiv) {
   var data = JSON.parse(res);
-  // console.log(data)
   if (data && data[2] && data[2].file) {
     dats = data[2]
     var src = `https://s3-us-west-2.amazonaws.com/huaherokupdfs/${dats.make}/${dats.model}/${dats.year}/${dats.file}#page=${dats.page}`
@@ -35,6 +34,8 @@ function mainHandler() {
 
   var request = new XMLHttpRequest();
   request.open('GET', url, true);
+  // below is a callback function. we define what we want to happen whenever the request loads
+  // unlike python, code doesn't execute top to bottom of file
   request.onload = function() {
     if (this.status >= 200 && this.status < 400) {
       // Success!
@@ -52,4 +53,5 @@ function mainHandler() {
   return false; // prevent the button from doing button stuff
 }
 
+// attach the mainHandler function to the click event of the submit button
 document.getElementById('submit').onclick = mainHandler
