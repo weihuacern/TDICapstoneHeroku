@@ -14,7 +14,12 @@ PORT = os.environ.get('PORT', default=8000)
 DEBUG = os.environ.get('DEBUG', default=False)
 
 app = Flask(__name__)
-stop_words = set(stopwords.words('english'))
+try:
+    stop_words = set(stopwords.words('english'))
+except LookupError as l:
+    nltk.download('stopwords')
+    stop_words = set(stopwords.words('english'))
+
 
 def tokenization(text, vocabulary):
     tokenizer = RegexpTokenizer(r'\w+')
