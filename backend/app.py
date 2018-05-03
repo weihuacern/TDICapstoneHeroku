@@ -1,7 +1,7 @@
 # python3
 
 from flask import Flask, jsonify, render_template, request, redirect, url_for
-
+import os
 import nltk
 from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk.corpus import stopwords
@@ -11,17 +11,18 @@ import pandas as pd
 import gensim
 
 app = Flask(__name__)
-stopWords = set(stopwords.words('english'))
+stop_words = set(stopwords.words('english'))
+PORT = os.environ.get("PORT", default=8000)
+DEBUG = os.environ.get("DEBUG", default=False)
 
 def tokenization(text, vocabulary):
     tokenizer = RegexpTokenizer(r'\w+')
-    #stopWords = set(stopwords.words('english'))
 
     wordsFiltered = []
     words = tokenizer.tokenize(text)
     for w in words:
         wlower = w.lower()
-        if wlower not in stopWords and wlower in vocabulary:
+        if wlower not in stop_words and wlower in vocabulary:
             if len(wlower) > 1: # filter short word
                 wordsFiltered.append(wlower)
     return wordsFiltered
@@ -41,7 +42,7 @@ def getresult(make, model, year, query, qtype):
     w2vmodel = gensim.models.Word2Vec.load("models/" + make + "_" + model + "_" + year + "_w2v.model")
 
     #split query
-    querylist = [x.lower() for x in query.split(' ') if x.lower() not in stopWords and x.lower() in w2vmodel.wv.vocab]
+    querylist = [x.lower() for x in query.split(' ') if x.lower() not in stop_words and x.lower() in w2vmodel.wv.vocab]
 
     reslist = []
     for index, row in df.iterrows():
@@ -77,4 +78,4 @@ def predict():
         return 'make me a better error message'
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000, debug = True)
+    app.run(host='0.0.0.0', port=PORT, debug=DEBUG)
