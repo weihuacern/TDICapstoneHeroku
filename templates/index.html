@@ -7,7 +7,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta name="author" content="Hua Wei">
 	<title>Owner Manual Search</title>
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+	<!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css"> -->
 	<link rel="stylesheet" href="{{ url_for('static',filename='css/normalize.css')}}">
 	<link rel="stylesheet" href="{{ url_for('static',filename='css/skeleton.css')}}">
 	<link rel="icon" type="image/png" href="{{ url_for('static',filename='images/tj_favicon.ico')}}">
@@ -39,13 +39,16 @@
 					<option value="Navi">Navi</option>
 					<option value="FFG">FFG</option>
 				</select>
-				<label>Question</label>
-				<input id="query" type="text" size="40" name="query" value="" placeholder="What do you want to know?" />
-				<input class="button-primary" type="button" id="submit" />
+				<div class="six columns">
+					<!-- <label for="query">Question</label> -->
+					<input id="query" type="text" size="40" name="query" value="" placeholder="What do you want to know?" />
+					<button class="button-primary" type="button" id="submit" >Search</button>
+				</div>
 			</form>
 		</div>
 		<div id="main"></div>
 	</div>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.0.489/pdf.min.js"></script>
 	<script src="{{ url_for('static',filename='js/main.js')}}"></script>
 </body>
 
