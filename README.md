@@ -31,3 +31,4 @@ The server is a Flask server on port 8000 (configurable with a PORT environment 
 * Deploy on AWS - this will involve putting the app behind gunicorn... may as well Dockerize it...
 * make a `/voice` endpoint, that returns something like "On page x of the `manual_type` manual, it says ... " 
 * Improve embedding - this would mean (possibly) leaving `gensim`, which sucks as it has a nice API. So it's only worth it for a big improvement
+* Do a real frontend setup with `npm` and some build tools

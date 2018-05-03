@@ -28,6 +28,14 @@ def tokenization(text, vocabulary):
                 wordsFiltered.append(wlower)
     return wordsFiltered
 
+def get_car_params(request):
+    make = request.args.get('make', default='KIA')
+    model = request.args.get('model', default='Rio')
+    year = request.args.get('year', default='2017')
+    query = str(request.args.get('query'))
+    manual_type = str(request.args.get('manual_type', default='OM'))
+    return make, model, year, query, manual_type
+
 
 def get_sql(make, model, year, manual_type):
     con = sqlite3.connect('text/' + make + '.db')
@@ -49,7 +57,7 @@ def get_data_frame(sqlcmds, con):
     return df
 
 
-def getresult(model, query, make='KIA', year='2017', manual_type='OM', num_results=3):
+def get_result(model, query, make='KIA', year='2017', manual_type='OM', num_results=3):
     """
     returns two values (in node style), either True, None which indicates an error happened
     or False, and an array of dictionaries OTF {file:..., page:..., similarity:..., text:...}
@@ -95,15 +103,28 @@ def predict():
     Example
     /api?make=KIA&model=Rio&year=2017&manual_type=OM&query=bluetooth
     """
-    make = request.args.get('make', default='KIA')
-    model = request.args.get('model', default='Rio')
-    year = request.args.get('year', default='2017')
-    query = str(request.args.get('query'))
-    manual_type = str(request.args.get('manual_type', default='OM'))
+    make, model, year, query, manual_type = get_car_params(request)
 
     if model and query:
-        error, top_3 = getresult(
-            model, query, make=make, year=year, manual_type=manual_type)
+        error, top_3 = get_result(
+            model, query, make=make, year=year, manual_type=manual_type, num_results=3)
+        if error:
+            abort(404)
+        return jsonify(top_3)
+    else:
+        abort(404)
+
+@app.route('/voice')
+def voice():
+    """
+    Example
+    /voice?make=KIA&model=Rio&year=2017&manual_type=OM&query=bluetooth
+    """
+    make, model, year, query, manual_type = get_car_params(request)
+
+    if model and query:
+        error, top = get_result(
+            model, query, make=make, year=year, manual_type=manual_type, num_results=1)
         if error:
             abort(404)
         return jsonify(top_3)
