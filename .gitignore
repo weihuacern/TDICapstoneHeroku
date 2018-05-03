@@ -1,3 +1,5 @@
 local.procfile
 .vscode
 *.pyc
+-__pycache__
+-.env
