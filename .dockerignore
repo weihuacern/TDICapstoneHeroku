@@ -7,3 +7,4 @@ __OLD__app.py
 *.pyc
 Procfile
 *.procfile
+bundle.zip
