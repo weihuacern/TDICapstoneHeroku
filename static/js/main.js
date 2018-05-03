@@ -1,7 +1,9 @@
 // This is ugly javascript, but it will work on IE10 and above
+var re = new RegExp('local=true', 'i')
+var LOCAL = re.test(window.location.search)
 
-var mainDiv = document.getElementById('main');
-var iframe = document.createElement('iframe');
+var mainDiv = document.getElementById('main')
+var iframe = document.createElement('iframe')
 iframe.width = 960
 iframe.height = 700
 iframe.align = "middle"
@@ -16,7 +18,13 @@ function successHandler(res, iframe, mainDiv) {
   var data = JSON.parse(res);
   if (data && data[2] && data[2].file) {
     dats = data[2]
-    var src = `https://s3-us-west-2.amazonaws.com/huaherokupdfs/${dats.make}/${dats.model}/${dats.year}/${dats.file}#page=${dats.page}`
+    var src = LOCAL
+            ? `static/images/2018_kia_rio_om.pdf#page=${dats.page}`
+            : `https://s3-us-west-2.amazonaws.com/huaherokupdfs/${dats.make}/${dats.model}/${dats.year}/${dats.file}#page=${dats.page}`
+    
+    if (LOCAL) {
+      console.warn('Using a generic PDF for testing w/o going over the network. Page will be wrong')
+    }
     iframe.src = src
   }
   
