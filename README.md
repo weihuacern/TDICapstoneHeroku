@@ -1,4 +1,4 @@
-# TDICapstoneHeroku
+# Talk to Owner Manuals
 
 Local test:
 ```sh
