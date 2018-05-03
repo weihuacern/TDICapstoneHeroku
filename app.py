@@ -60,17 +60,17 @@ def getresult(make, model, year, query, qtype):
   
   #split query
   querylist = [x.lower() for x in query.split(' ') if x.lower() not in stopWords and x.lower() in w2vmodel.wv.vocab]
-
+  print(querylist)
   reslist = []
   for index, row in df.iterrows():
     textlist = tokenization(row['text'], w2vmodel.wv.vocab)
     if len(textlist) > 0:
       similarity = w2vmodel.n_similarity( querylist, textlist)
-      thistuple = (row['filename'], int(row['pagenum']), similarity)
+      thistuple = (row['filename'], int(row['pagenum']), row['text'], similarity)
       reslist.append(thistuple)
 
-  sorted_reslist = sorted(reslist, key=lambda x: x[2])
-  #print(sorted_reslist)
+  sorted_reslist = sorted(reslist, key=lambda x: x[3])
+  print(sorted_reslist[:2])
   return sorted_reslist
   #return [("2017_Forte_FFG.pdf", 16, 0.124), 
   #        ("qpdfHacked_2017_Forte_OM.pdf", 25, 0.924)]
@@ -116,4 +116,4 @@ def predict():
   return html
 
 if __name__ == '__main__':
-  app.run(debug = True)
+  app.run(host='0.0.0.0', port=8000, debug = True)
