@@ -3,3 +3,11 @@ local.procfile
 *.pyc
 -__pycache__
 -.env
+**/.DS_Store
+static/images/2018_kia_rio_om.pdf
+bundle.zip
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml

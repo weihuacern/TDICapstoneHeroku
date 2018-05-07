@@ -1,0 +1,10 @@
+.vscode
+NLPModels/
+TextDBs/
+__OLD__app.py
+.git
+.gitignore
+*.pyc
+Procfile
+*.procfile
+bundle.zip
